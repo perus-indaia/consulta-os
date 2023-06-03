@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Consulta de OS</title>
+  <script src="https://apis.google.com/js/api.js"></script>
+</head>
+<body>
+  <h1>Consulta de OS</h1>
+  <label for="osNumber">Número da OS:</label>
+  <input type="text" id="osNumber">
+  <button onclick="checkStatus()">Consultar</button>
+  <div id="status"></div>
+
+  <script>
+    function checkStatus() {
+      var osNumber = document.getElementById('osNumber').value;
+
+      gapi.load('client', function() {
+        gapi.client.init({
+          apiKey: 'SUA_API_KEY'
+        }).then(function() {
+          return gapi.client.request({
+            'path': 'https://sheets.googleapis.com/v4/spreadsheets/1IgqWOaZ7dyE99hCCmqhJKFHuIOmTjjRC0QJw-nHHn2w/values/Sheet1!A:B',
+          });
+        }).then(function(response) {
+          var data = response.result;
+          var values = data.values;
+          var status = '';
+
+          for (var i = 0; i < values.length; i++) {
+            var row = values[i];
+            var os = row[0];
+            var statusValue = row[1];
+
+            if (os === osNumber) {
+              status = statusValue;
+              break;
+            }
+          }
+
+          if (status === '') {
+            status = 'Número de OS inválido ou não encontrado.';
+          }
+
+          document.getElementById('status').textContent = 'Status: ' + status;
+        }, function(reason) {
+          console.error('Erro:', reason.result.error.message);
+        });
+      });
+    }
+  </script>
+  <script src="https://apis.google.com/js/client.js?onload=init"></script>
+</body>
+</html>
+
