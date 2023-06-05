@@ -1,55 +1,100 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Consulta de OS</title>
-  <script src="https://apis.google.com/js/api.js"></script>
+    <title>Consulta de Serviços</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+	body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    padding: 5px;
+    width: 200px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#resultado {
+    margin-top: 20px;
+}
+
+#resultado p {
+    margin-bottom: 5px;
+}
+
+     </style>
 </head>
 <body>
-  <h1>Consulta de OS</h1>
-  <label for="osNumber">Número da OS:</label>
-  <input type="text" id="osNumber">
-  <button onclick="checkStatus()">Consultar</button>
-  <div id="status"></div>
+    <h1>Consulta de Serviços</h1>
+    <label for="numero-servico">Número do Serviço:</label>
+    <input type="text" id="numero-servico">
+    <button onclick="consultarServico()">Consultar</button>
 
-  <script>
-    function checkStatus() {
-      var osNumber = document.getElementById('osNumber').value;
+    <div id="resultado"></div>
 
-      gapi.load('client', function() {
-        gapi.client.init({
-          apiKey: '708576627957-i1merbaq4duams1gj6e19r20ukldntl6.apps.googleusercontent.com'
-        }).then(function() {
-          return gapi.client.request({
-            'path': 'https://docs.google.com/spreadsheets/d/1IgqWOaZ7dyE99hCCmqhJKFHuIOmTjjRC0QJw-nHHn2w/edit?usp=sharing',
-          });
-        }).then(function(response) {
-          var data = response.result;
-          var values = data.values;
-          var status = '';
+    <script>
+        function consultarServico() {
+            var numeroServico = document.getElementById("numero-servico").value;
+            var spreadsheetId = '1IgqWOaZ7dyE99hCCmqhJKFHuIOmTjjRC0QJw-nHHn2w';
+            var range = 'Dados!A:C'; // Substitua pelo nome da sua aba e intervalo de dados
+	    var link = 'https://sheets.googleapis.com/v4/spreadsheets/1IgqWOaZ7dyE99hCCmqhJKFHuIOmTjjRC0QJw-nHHn2w/values/Dados!A:C?key=AIzaSyAoiVEnbbmnnhlmPAW4up7sZI_rrZp6m3c';
+            var url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=AIzaSyAoiVEnbbmnnhlmPAW4up7sZI_rrZp6m3c`;
 
-          for (var i = 0; i < values.length; i++) {
-            var row = values[i];
-            var os = row[0];
-            var statusValue = row[1];
+            $.get(url, function(data) {
+                var values = data.values;
+                var resultados = [];
 
-            if (os === osNumber) {
-              status = statusValue;
-              break;
+                for (var i = 0; i < values.length; i++) {
+                    var numero = values[i][1];
+                    var status = values[i][2];
+                    var dataStatus = values[i][0];
+
+                    if (numero === numeroServico) {
+                        resultados.push({ status: status, data: dataStatus });
+                    }
+                }
+
+                exibirResultados(resultados);
+            });
+        }
+
+        function exibirResultados(resultados) {
+            var resultadoDiv = document.getElementById("resultado");
+            resultadoDiv.innerHTML = "";
+
+            if (resultados.length === 0) {
+                resultadoDiv.innerHTML = "Nenhum resultado encontrado para o número do serviço informado.";
+            } else {
+                for (var i = 0; i < resultados.length; i++) {
+                    var resultado = resultados[i];
+                    resultadoDiv.innerHTML += "<p>" + resultado.status + " - " + resultado.data + "</p>";
+                }
             }
-          }
-
-          if (status === '') {
-            status = 'Número de OS inválido ou não encontrado.';
-          }
-
-          document.getElementById('status').textContent = 'Status: ' + status;
-        }, function(reason) {
-          console.error('Erro:', reason.result.error.message);
-        });
-      });
-    }
-  </script>
-  <script src="https://apis.google.com/js/client.js?onload=init"></script>
+        }
+    </script>
 </body>
 </html>
+
 
