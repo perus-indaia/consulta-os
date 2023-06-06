@@ -48,6 +48,9 @@ button:hover {
 </head>
 <body>
     <h1>Consulta de Serviços</h1>
+    <label for="link-planilha">Link da Planilha:</label>
+    <input type="text" id="link-planilha">
+    <br>
     <label for="numero-servico">Número do Serviço:</label>
     <input type="text" id="numero-servico">
     <button onclick="consultarServico()">Consultar</button>
@@ -55,11 +58,31 @@ button:hover {
     <div id="resultado"></div>
 
     <script>
+        function obterIDPlanilha(linkPlanilha) {
+            // Verifica se o link possui um formato válido
+            var regex = /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
+            var match = linkPlanilha.match(regex);
+
+            if (match && match.length >= 2) {
+                return match[1];
+            } else {
+                return null;
+            }
+        }
+
         function consultarServico() {
+            var linkPlanilha = document.getElementById("link-planilha").value;
             var numeroServico = document.getElementById("numero-servico").value;
-            var spreadsheetId = '1IgqWOaZ7dyE99hCCmqhJKFHuIOmTjjRC0QJw-nHHn2w';
-            var range = 'Dados!A:C'; // Substitua pelo nome da sua aba e intervalo de dados
-	    var link = 'https://sheets.googleapis.com/v4/spreadsheets/1IgqWOaZ7dyE99hCCmqhJKFHuIOmTjjRC0QJw-nHHn2w/values/Dados!A:C?key=AIzaSyAoiVEnbbmnnhlmPAW4up7sZI_rrZp6m3c';
+            var spreadsheetId = obterIDPlanilha(linkPlanilha);
+	    alert(spreadsheetId);
+
+            if (!spreadsheetId) {
+                alert("O link da planilha é inválido. Certifique-se de fornecer um link válido.");
+                return;
+            }
+
+            var range = 'Dados!A:D'; // Substitua pelo nome da sua aba e intervalo de dados
+
             var url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=AIzaSyAoiVEnbbmnnhlmPAW4up7sZI_rrZp6m3c`;
 
             $.get(url, function(data) {
