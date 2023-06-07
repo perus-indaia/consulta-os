@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consulta de Serviços</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+	body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    padding: 5px;
+    width: 200px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#resultado {
+    margin-top: 20px;
+}
+
+#resultado p {
+    margin-bottom: 5px;
+}
+
+     </style>
+</head>
+<body>
+    <h1>Consulta de Serviços</h1>
+    <br>
+    <label for="numero-servico">Número do Serviço:</label>
+    <input type="text" id="numero-servico">
+    <button onclick="consultarServico()">Consultar</button>
+    <br>
+    <a href="index.html">Sair</a>
+
+    <div id="resultado"></div>
+
+    <script>
+        function obterIDPlanilha(linkPlanilha) {
+            // Verifica se o link possui um formato válido
+            var regex = /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
+            var match = linkPlanilha.match(regex);
+
+            if (match && match.length >= 2) {
+                return match[1];
+            } else {
+                return null;
+            }
+        }
+
+        function consultarServico() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var valor = urlParams.get('valor'); 
+            var linkPlanilha = decodeURIComponent(valor);
+            var numeroServico = document.getElementById("numero-servico").value;
+            var spreadsheetId = obterIDPlanilha(linkPlanilha);
+
+            if (!spreadsheetId) {
+                alert("Não foi possível se comunicar com a planilha. Faça o login novamente");
+                window.location="index.html"
+                return;
+            }
+
+            var range = 'Dados!A:D'; // Substitua pelo nome da sua aba e intervalo de dados
+
+            var url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=AIzaSyAoiVEnbbmnnhlmPAW4up7sZI_rrZp6m3c`;
+
+            $.get(url, function(data) {
+                var values = data.values;
+                var resultados = [];
+
+                for (var i = 0; i < values.length; i++) {
+                    var numero = values[i][1];
+                    var status = values[i][2];
+                    var dataStatus = values[i][0];
+
+                    if (numero === numeroServico) {
+                        resultados.push({ status: status, data: dataStatus });
+                    }
+                }
+
+                exibirResultados(resultados);
+            });
+        }
+
+        function exibirResultados(resultados) {
+            var resultadoDiv = document.getElementById("resultado");
+            resultadoDiv.innerHTML = "";
+
+            if (resultados.length === 0) {
+                resultadoDiv.innerHTML = "Nenhum resultado encontrado para o número do serviço informado.";
+            } else {
+                for (var i = 0; i < resultados.length; i++) {
+                    var resultado = resultados[i];
+                    resultadoDiv.innerHTML += "<p>" + resultado.status + " - " + resultado.data + "</p>";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
+

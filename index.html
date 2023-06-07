@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Consulta de Serviços</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <style>
-	body {
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tela de Login</title>
+  <style>
+    body {
     font-family: Arial, sans-serif;
     margin: 20px;
 }
@@ -19,7 +20,7 @@ label {
     font-weight: bold;
 }
 
-input[type="text"] {
+input {
     padding: 5px;
     width: 200px;
 }
@@ -48,59 +49,46 @@ button:hover {
 </head>
 <body>
     <h1>Consulta de Serviços</h1>
-    <label for="link-planilha">Link da Planilha:</label>
-    <input type="text" id="link-planilha">
     <br>
-    <label for="numero-servico">Número do Serviço:</label>
-    <input type="text" id="numero-servico">
-    <button onclick="consultarServico()">Consultar</button>
+    <input type="text" id="username" placeholder="Nome de usuário" required>
+    <br>
+    <input type="password" id="password" placeholder="Senha" required>
+    <button onclick="checkLogin()">Entrar</button>
+  
+	<div id="resultado"></div>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script>
+    const resultados = [];
 
-    <div id="resultado"></div>
-
-    <script>
-        function obterIDPlanilha(linkPlanilha) {
-            // Verifica se o link possui um formato válido
-            var regex = /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
-            var match = linkPlanilha.match(regex);
-
-            if (match && match.length >= 2) {
-                return match[1];
-            } else {
-                return null;
-            }
-        }
-
-        function consultarServico() {
-            var linkPlanilha = document.getElementById("link-planilha").value;
-            var numeroServico = document.getElementById("numero-servico").value;
-            var spreadsheetId = obterIDPlanilha(linkPlanilha);
-
-            if (!spreadsheetId) {
-                alert("O link da planilha é inválido. Certifique-se de fornecer um link válido.");
-                return;
-            }
-
-            var range = 'Dados!A:D'; // Substitua pelo nome da sua aba e intervalo de dados
-
+    function checkLogin() {
+    
+            var spreadsheetLink = '';
+      	    var nome = document.getElementById("username").value;
+	        var senha = document.getElementById("password").value;
+            var spreadsheetId = '1pKodIFiDfyw9IlFX5bT51Tt3RaY704R0O35NU1BB1No';
+            var range = 'Dados!B:D'; // Substitua pelo nome da sua aba e intervalo de dados
+	   
             var url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=AIzaSyAoiVEnbbmnnhlmPAW4up7sZI_rrZp6m3c`;
-
+	     
             $.get(url, function(data) {
                 var values = data.values;
-                var resultados = [];
+                
 
                 for (var i = 0; i < values.length; i++) {
-                    var numero = values[i][1];
-                    var status = values[i][2];
-                    var dataStatus = values[i][0];
-
-                    if (numero === numeroServico) {
-                        resultados.push({ status: status, data: dataStatus });
+        
+                    if(nome == values[i][0]){
+                        if(senha == values[i][1]){
+                            var link = values[i][2]
+                            resultados.push({ link: link });
+                            exibirResultados(resultados);
+                        }
                     }
+
                 }
 
-                exibirResultados(resultados);
+                
             });
-        }
+        
 
         function exibirResultados(resultados) {
             var resultadoDiv = document.getElementById("resultado");
@@ -111,12 +99,17 @@ button:hover {
             } else {
                 for (var i = 0; i < resultados.length; i++) {
                     var resultado = resultados[i];
-                    resultadoDiv.innerHTML += "<p>" + resultado.status + " - " + resultado.data + "</p>";
+                    var valorParam = encodeURIComponent(resultado.link);
+  
+                    window.location.href = "consulta.html?valor=" + valorParam;
                 }
             }
         }
-    </script>
+    }
+
+   
+  </script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
 </body>
 </html>
-
-
